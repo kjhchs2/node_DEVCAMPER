@@ -96,6 +96,9 @@ const BootcampSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
+}, {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
 });
 
 // Create bootcamp slug from the name 
@@ -105,7 +108,8 @@ BootcampSchema.pre('save', function(next) {
     next();
 });
 
-// Geocode & create location field
+// Geocode & create location field 
+// pre를 활용하여 'save'가 이뤄지기 전에 아래 함수들을 실행한다. 
 BootcampSchema.pre('save', async function(next) {
     const loc = await geocoder.geocode(this.address);
     this.location = {
@@ -124,7 +128,20 @@ BootcampSchema.pre('save', async function(next) {
     next();
 })
 
+// Cascade delete courses when a bootcamp is deleted 
+BootcampSchema.pre('remove', async function(next) {
+    console.log(`courses buing removed from bootcamp ${this._id}`);
+    await this.model('Course').deleteMany({ bootcamp: this._id });
+    next();
+})
 
+// Reverse populate with virtuals
+BootcampSchema.virtual('courses', {
+    ref: 'Course',
+    localField: '_id',
+    foreignField: 'bootcamp',
+    justOne: false
+})
 
 // 여기 'Bootcamp'가 mongodb이름 정해준다..
 module.exports = mongoose.model('Bootcamp', BootcampSchema)

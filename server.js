@@ -14,6 +14,7 @@ connectDB();
 
 // Routes Files 
 const bootcamps = require('./routes/bootcamps');
+const courses = require('./routes/courses');
 
 const app = express();
 
@@ -28,6 +29,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // Mount routers 
 app.use('/api/v1/bootcamps', bootcamps);
+app.use('/api/v1/courses', courses);
 
 // middleware (위에 bootcamps 보다 반드시 아래 있어야 함) 
 app.use(errorHandler);
